@@ -1,0 +1,66 @@
+---
+
+## Start of Service clients
+service-definitions:
+  - CCS: &CCS
+        serviceId: ccs
+        path: /private/auth
+        class: CCSClient
+
+  - TPS4112: &TPS4112
+        serviceId: TPS
+        path: /mli/4112
+        class: TPSClient
+
+  - TPS4604: &TPS4604
+        serviceId: TPS
+        path: /mli/4604
+        class: TPSClient
+
+  - RoleIDUpdateSync: &RoleIDUpdateSync
+        serviceId: RoleIDUpdateSync
+        path: /mli/4604
+        class: TPSClient
+
+  - MFA: &MFA
+        serviceId: TPS
+        path: /mfa
+
+
+  - CBOL-LEGACY: &CBOL-LEGACY
+        path: /mfa
+
+  - TI: &TI
+        serviceId: TI
+        path: /mfa
+
+## End of Service Client definitions
+
+## Tenant specific configuration
+tenants:
+  - tenant:
+      countryCode: US
+      businessCode: GCB
+      channelCode: MOB
+      ts: TI
+    authN:
+      strategy: AnyOfByServiceId
+      back-ends:
+      - <<: *TI
+      - <<: *CCS
+    authZ:
+      strategy: AllOfByCustomerType
+      back-ends:
+      - <<: *TPS4112
+      - <<: *TPS4604
+      - <<: *MFA
+    authSso:
+      strategy: AllOf
+      back-ends:
+      - <<: *CBOL-LEGACY
+
+    authAfter:
+      strategy: AllOf
+      back-ends:
+      - <<: *RoleIDUpdateSync
+
