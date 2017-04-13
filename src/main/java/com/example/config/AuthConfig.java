@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 public class AuthConfig {
     @NotNull
-    private StrategyFunctionsEnum strategy;
+    private StrategyBiFunctionsEnum strategy;
     @Valid
     @JsonProperty("backends")
     private List<BackEndServiceClient> backEnds;

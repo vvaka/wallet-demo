@@ -1,16 +1,17 @@
 package com.example;
 
-import com.example.config.AppConfig;
+import com.example.domain.AuthInOut;
 import com.example.domain.User;
+import com.example.service.LoginService;
 import groovy.util.logging.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @SpringBootApplication
 public class DemoLoginApplication {
@@ -24,23 +25,19 @@ public class DemoLoginApplication {
 @Slf4j
 class DemoLogin {
 
-    private AppConfig appConfig;
+    private LoginService loginService;
 
     @Autowired
-    public DemoLogin(AppConfig appConfig) {
-        this.appConfig = appConfig;
+    public DemoLogin(LoginService loginService) {
+        this.loginService = loginService;
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/login")
-    ResponseEntity<Void> doLogin(@RequestBody User user) {
+    ResponseEntity<AuthInOut> doLogin(@RequestBody User user, @RequestHeader HttpHeaders headers) {
 
-        this.validateUser(user.getUserId());
+        Optional<AuthInOut> result = loginService.doLogin(user, headers);
 
-        return ResponseEntity.ok(null);
-    }
-
-    private void validateUser(String userId) {
-
+        return ResponseEntity.ok(result.orElse(null));
     }
 
 

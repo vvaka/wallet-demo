@@ -18,22 +18,12 @@ import java.util.Map;
 @Builder
 public class AuthInOut {
 
+
     private Request request;
 
-
-    List<Response> authNResults;
-
-    List<Response> authZResults;
-
-    List<Response> authSsoResults;
-
-    List<Response> authAfterResults;
-
+    List<Response> authResults;
 
     @JsonIgnore
     private TenantConfig tenantConfig;
 
-    //TODO: find a way to remove this
-    @JsonIgnore
-    private String currentFlow;
 }

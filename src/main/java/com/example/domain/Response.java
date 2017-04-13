@@ -1,5 +1,6 @@
 package com.example.domain;
 
+import com.example.config.BackEndServiceClient;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import groovy.transform.builder.Builder;
 import lombok.Value;
@@ -13,7 +14,7 @@ import org.springframework.util.MultiValueMap;
 @Builder
 public class Response {
 
-    String backendName;
+    BackEndServiceClient backend;
 
     @JsonRawValue
     String payload;

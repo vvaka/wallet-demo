@@ -8,6 +8,7 @@ import com.example.domain.Request;
 import com.example.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.stereotype.Component;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -15,9 +16,10 @@ import java.util.Optional;
 /**
  * Created by vvaka on 4/12/17.
  */
+@Component
 public class LoginService {
 
-    AppConfig appConfig;
+    private AppConfig appConfig;
 
 
     @Autowired
@@ -26,8 +28,9 @@ public class LoginService {
     }
 
 
-    Optional<TenantConfig> getTenantConfigForTenant(Tenant tenant) {
-        return appConfig.getTenants().stream().filter(t -> t.equals(tenant)).findFirst();
+    Optional<TenantConfig> getTenantConfigForTenant(final Tenant tenant) {
+        return appConfig.getTenants().stream()
+                .filter(tc -> tc.getTenant().equals(tenant)).findFirst();
 
     }
 
@@ -42,17 +45,32 @@ public class LoginService {
 
         TenantConfig tc = tenantConfigOptional.orElseThrow(NoSuchElementException::new);
 
-        AuthInOut out = tc.getAuthN().getStrategy().getFunc()
-                .andThen(tc.getAuthZ().getStrategy().getFunc())
-                .andThen(tc.getAuthSso().getStrategy().getFunc())
-                .andThen(tc.getAuthAfter().getStrategy().getFunc())
-                .apply(AuthInOut.builder()
-                        .tenantConfig(tc)
-                        .currentFlow("AuthN")
-                        .request(
-                        Request.builder().payload(user).headers(httpHeaders).build()
-                ).build());
+        AuthInOut authNResult = tc.getAuthN().getStrategy().getFunc()
+                .apply(tc.getAuthN().getBackEnds(),
+                        AuthInOut.builder()
+                                .tenantConfig(tc)
+                                .request(
+                                        Request.builder()
+                                                .payload(user)
+                                                .headers(httpHeaders)
+                                                .build()
+                                ).build());
 
-        return Optional.of(out);
+
+        AuthInOut authZResult = tc.getAuthZ().getStrategy().getFunc()
+                .apply(tc.getAuthZ().getBackEnds(),
+                        authNResult);
+
+        AuthInOut authSsoResult = tc.getAuthSso().getStrategy().getFunc()
+                .apply(tc.getAuthSso().getBackEnds(),
+                        authZResult);
+
+
+        AuthInOut authPostLoginResult = tc.getAuthAfter().getStrategy().getFunc()
+                .apply(tc.getAuthAfter().getBackEnds(),
+                        authSsoResult);
+
+
+        return Optional.of(authPostLoginResult);
     }
 }
